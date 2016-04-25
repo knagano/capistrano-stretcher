@@ -33,6 +33,10 @@ namespace :stretcher do
     roles(fetch(:consul_roles, [:consul]))
   end
 
+  def awscli_s3_options
+    fetch(:awscli_s3_options, [])
+  end
+
   task :mark_deploying do
     set :deploying, true
   end
@@ -93,7 +97,7 @@ namespace :stretcher do
   task :upload_tarball do
     on application_builder_roles do
       as 'root' do
-        execute :aws, :s3, :cp, "#{local_tarball_path}/current/#{fetch(:local_tarball_name)}", fetch(:stretcher_src)
+        execute :aws, *awscli_s3_options, :s3, :cp, "#{local_tarball_path}/current/#{fetch(:local_tarball_name)}", fetch(:stretcher_src)
       end
     end
   end
@@ -114,7 +118,7 @@ namespace :stretcher do
             t.path
           end
           upload! tempfile_path, "#{local_tarball_path}/current/manifest_#{role}_#{fetch(:stage)}.yml"
-          execute :aws, :s3, :cp, "#{local_tarball_path}/current/manifest_#{role}_#{fetch(:stage)}.yml", "#{fetch(:manifest_path)}/manifest_#{role}_#{fetch(:stage)}.yml"
+          execute :aws, *awscli_s3_options, :s3, :cp, "#{local_tarball_path}/current/manifest_#{role}_#{fetch(:stage)}.yml", "#{fetch(:manifest_path)}/manifest_#{role}_#{fetch(:stage)}.yml"
         end
       end
     end
